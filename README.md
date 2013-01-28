@@ -1,4 +1,13 @@
-cube2-crypto
-============
+# cube2-crypto
 
-Clojure library for doing cube2 crypto auth
+A Clojure library designed to ... well, that part is up to you.
+
+## Usage
+
+FIXME
+
+## License
+
+Copyright © 2013 FIXME
+
+Distributed under the Eclipse Public License, the same as Clojure.
