@@ -41,29 +41,36 @@
 
 (let [params ecc-params
       params-f (with-ecc-params params)]
-  (def modular-add (params-f +))
-  (def modular-double (fn [x] (modular-add x x)))
-  (def modular-sub (params-f -))
-  (def modular-mult (params-f *))
-  (def modular-square (fn [x] (modular-mult x x)))
-  (def modular-pow (params-f pow)))
+  (def m+ (params-f +))
+  (def m*2 (fn [x] (modular-add x x)))
+  (def m- (params-f -))
+  (def m* (params-f *))
+  (def m**2 (fn [x] (modular-mult x x)))
+  (def m** (params-f pow)))
 
-(defn jacobian-double [{:keys [x y z]}]
-  (when (not (zero? z))
-    (if (zero? y)
-      (ecc-params :origin)
-      (let [a (modular-square y)
-            b (modular-double a)
-            c (modular-square z)
-            d (modular-sub x c)
-            c' (modular-add c x)
-            d' (modular-mult d c')
-            
-            ])
-      )
-    )
-  ) ;; TODO ok what we're gonna do here is map this out a little
-;; better from the source
+;; http://en.wikipedia.org/wiki/Jacobian_curve
+;; http://hyperelliptic.org/EFD/g1p/auto-jquartic-xyz.html
+(defn jacobian-add [{:keys [x1 y1 z1]} {:keys [x2 y2 z2]}]
+  (let [a2 (m**2 x2)
+        c2 (m**2 z2)
+        d2 (m+ a2 c2)
+        b2 (m- (modular-square (modular-add x2 z2)) d2)
+        e2 (m+ b2 y2)
+        a1 (m**2 x1)
+        c1 (m**2 z1)
+        d1 (m+ a1 c1)
+        b1 (m- (m**2 (m+ x1 z1)) d1)
+        e1 (m+ b1 y1)
+        a1a2 (m* a1 a2)
+        b1b2 (m* b1 b2)
+        c1c2 (m* c1 c2)
+        y1y2 (m* y1 y2 )
+        f (m+ c1c2 a1a2)
+        g (m*2 b1b2)
+        x3 (m- (m* e1 e2) b1b2 y1y2)
+        y3 (m+ (m* f (m+ (m* 4 y1y2) g)) (m* (m- (m* d1 d2) f) g))
+        z3 (m*2 (m- c1c2 a1a2))]
+    {:x x3 :y y3 :z z3}))
 
 
 (defn -main
