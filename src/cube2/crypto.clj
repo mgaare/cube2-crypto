@@ -59,6 +59,22 @@
   (def m**2 (fn [x] (m* x x)))
   (def m** (params-f pow)))
 
+(defn big-m**
+  "faster algo for big exponents"
+  ([x exp]
+      (let [low-bit (bit-test exp 0)
+            carry (if low-bit x 1)]
+        (big-m** x (bit-shift-right exp 1) carry)))
+  ([x exp carry]
+     (if (= 0 exp)
+       carry
+       (let [x' (m**2 x)
+             low-bit (bit-test exp 0)
+             carry' (if low-bit (m* carry x') carry)]
+         (big-m** x' (bit-shift-right exp 1) carry')))))
+  
+  
+
 ;; http://en.wikipedia.org/wiki/Jacobian_curve
 ;; http://hyperelliptic.org/EFD/g1p/auto-jquartic-xyz.html
 (defn jacobian-add [{x1 :x y1 :y z1 :z :as p} {x2 :x y2 :y z2 :z :as q}]
@@ -84,6 +100,26 @@
           y3 (m+ (m* f (m+ (m* 4 y1y2) g)) (m* (m- (m* d1 d2) f) g))
           z3 (m*2 (m- c1c2 a1a2))]
       {:x x3 :y y3 :z z3})))
+
+(defn legendre
+  "eihrul function that checks... something to do with congruence with P for
+   purposes of square roots"
+  [x P]
+  (let [P-sub1-div2 (/ (- P 1) 2)
+        res (big-m** x P-sub1-div2)]
+    (cond (= 0 res) 0
+          (= 1 res) 1
+          true -1)))
+
+(defn legendre-sqrt
+  "another eihrul function for calculating square root (I guess) for initializing
+   y from some x"
+  [x P]
+  (let [check (legendre x P)]
+    (cond (= 0 check) 0
+           (= -1 check) nil
+           (= 1 check) (let [P-add1-div4 (/ (inc P) 4)]
+                         (big-m** x P-add1-div4)))))
 
 (defn jacobian-double
   "Borrowing Jacobian Projective coordinate in field Fp algorithm from:
@@ -119,6 +155,13 @@
         y3 (m* y1 a b)
         z3 1]
     {:x x3 :y y3 :z z3}))
+
+(defn jacobian-from-x
+  "equivalent to the parse function in eihrul ecjacobian"
+  [x]
+  (let [y2 (+ (- (m** x 3) (m* x 3)) (ecc-params :B))
+        y (square-root x)]
+    {:x x :y y :z 1}))
 
 (defn generate-private-key [bits]
   (when (= 0 (mod bits 8)) 
