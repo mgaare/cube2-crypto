@@ -62,19 +62,18 @@
 (defn big-m**
   "faster algo for big exponents"
   ([x exp]
-      (let [low-bit (bit-test exp 0)
+      (let [low-bit (= 1 (mod exp 2))
             carry (if low-bit x 1)]
-        (big-m** x (bit-shift-right exp 1) carry)))
+        (big-m** x (bigint (/ exp 2)) carry)))
   ([x exp carry]
      (if (= 0 exp)
        carry
        (let [x' (m**2 x)
-             low-bit (bit-test exp 0)
+             low-bit (= 1 (mod exp 2))
              carry' (if low-bit (m* carry x') carry)]
-         (big-m** x' (bit-shift-right exp 1) carry')))))
+         (big-m** x' (bigint (/ exp 2)) carry')))))
   
   
-
 ;; http://en.wikipedia.org/wiki/Jacobian_curve
 ;; http://hyperelliptic.org/EFD/g1p/auto-jquartic-xyz.html
 (defn jacobian-add [{x1 :x y1 :y z1 :z :as p} {x2 :x y2 :y z2 :z :as q}]
@@ -160,7 +159,7 @@
   "equivalent to the parse function in eihrul ecjacobian"
   [x]
   (let [y2 (+ (- (m** x 3) (m* x 3)) (ecc-params :B))
-        y (square-root x)]
+        y (legendre-sqrt y2 (ecc-params :P))]
     {:x x :y y :z 1}))
 
 (defn generate-private-key [bits]
