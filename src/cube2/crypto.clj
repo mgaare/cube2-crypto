@@ -13,7 +13,8 @@
                         :x 16r188da80eb03090f67cbf20eb43a18800f4ff0afd82ff1012
                         :y 16r07192b95ffc8da78631011ed6b24cdd573f977a11e794811
                         :z 1}
-                 :origin {:x 1 :y 1 :z 0}})
+                 :origin {:x 1 :y 1 :z 0}
+                 :bit-size 192})
 
 (defn dec->hex [dec]
   (format "%x" (biginteger dec)))
@@ -58,6 +59,11 @@
   (def m* (params-f *))
   (def m**2 (fn [x] (m* x x)))
   (def m** (params-f pow)))
+
+(defn get-random []
+  (let [bit-size (ecc-params :bit-size)
+        bytes (/ bit-size 8)]
+    (crypto.random/hex bytes)))
 
 (defn big-m**
   "faster algo for big exponents"
@@ -162,10 +168,8 @@
         y (legendre-sqrt y2 (ecc-params :P))]
     {:x x :y y :z 1}))
 
-(defn generate-private-key [bits]
-  (when (= 0 (mod bits 8)) 
-    (let [bytes (/ bits 8)]
-      (crypto.random/hex bytes))))
+(defn generate-private-key []
+  (get-random))
 
 (defn get-public-key [private-key]
   (let [base (ecc-params :base)
@@ -176,3 +180,18 @@
         (jacobian-mult key)
         jacobian-normalize
         :x)))
+
+(defn crypt-message
+  [message jacobian-key]
+  (-> jacobian-key
+      (jacobian-mult message)
+      :x))
+
+(defn generate-challenge
+  [message pubkey]
+  (let [jacobian-pubkey (jacobian-from-x pubkey)
+        jacobian-base (ecc-params :base)
+        message (get-random)]
+    {:message message
+     :challenge (crypt-message message jacobian-base)
+     :answer (crypt-message message jacobian-pubkey)}))
