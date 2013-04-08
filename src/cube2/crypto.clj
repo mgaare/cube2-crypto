@@ -182,8 +182,8 @@
         :x)))
 
 (defn crypt-message
-  [message jacobian-key]
-  (-> jacobian-key
+  [message jacobian]
+  (-> jacobian
       (jacobian-mult message)
       :x))
 
