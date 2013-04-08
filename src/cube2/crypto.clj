@@ -63,7 +63,7 @@
 (defn get-random []
   (let [bit-size (ecc-params :bit-size)
         bytes (/ bit-size 8)]
-    (crypto.random/hex bytes)))
+    (hex->dec (crypto.random/hex bytes))))
 
 (defn big-m**
   "faster algo for big exponents"
@@ -106,6 +106,18 @@
           z3 (m*2 (m- c1c2 a1a2))]
       {:x x3 :y y3 :z z3})))
 
+(defn jacobian-add' [{x1 :x y1 :y z1 :z :as p} {x2 :x y2 :y z2 :z :as q}]
+  (if (nil? z2)
+    p
+    (let [a (m* x2 (m**2 z1))
+          b (m* y2 (m** z1 3))
+          c (m- a x1)
+          d (m- b y1)
+          x3 (m- (m**2 d) (m+ (m** c 3) (m* 2 x1 (m**2 c))))
+          y3 (m- (m* d (m- (m* x1 (m**2 c)) x3)) (m* y1 (m** c 3)))
+          z3 (m* z1 c)]
+      {:x x3 :y y3 :z z3})))
+
 (defn legendre
   "eihrul function that checks... something to do with congruence with P for
    purposes of square roots"
@@ -130,7 +142,7 @@
   "Borrowing Jacobian Projective coordinate in field Fp algorithm from:
    http://www.dkrypt.com/home/ecc"
   [{x1 :x y1 :y z1 :z}]
-  (let [a (m+ (m* 4 x1) (m**2 y1))
+  (let [a (m* (m* 4 x1) (m**2 y1))
         b (m* 8 (m** y1 4))
         c (m* (m* 3 (m- x1 (m**2 z1))) (m+ x1 (m**2 z1)))
         d (m+ (m* a -2) (m**2 c))
