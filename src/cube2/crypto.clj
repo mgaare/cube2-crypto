@@ -1,5 +1,6 @@
 (ns cube2.crypto
-  (:require [crypto.random]))
+  (:require [crypto.random]
+            [cube2.jacobian]))
 
 (defn pow [base exp]
   (let [seq (repeat exp base)]
@@ -78,8 +79,8 @@
              low-bit (= 1 (mod exp 2))
              carry' (if low-bit (m* carry x') carry)]
          (big-m** x' (bigint (/ exp 2)) carry')))))
-  
-  
+
+
 ;; http://en.wikipedia.org/wiki/Jacobian_curve
 ;; http://hyperelliptic.org/EFD/g1p/auto-jquartic-xyz.html
 (defn jacobian-add [{x1 :x y1 :y z1 :z :as p} {x2 :x y2 :y z2 :z :as q}]
