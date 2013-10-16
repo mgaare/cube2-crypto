@@ -49,7 +49,7 @@
                  f (m* c e)
                  x' (m- (msquare b) f)
                  e (-> e (m* a) (m* d))
-                 y' (-> f (m- x) (m- x) (m* b) (m- e))
+                 y' (-> f (m- x') (m- x') (m* b) (m- e))
                  y' (mdiv2 y')]
              (assoc this :x x' :y y' :z z')))))))
 
@@ -61,7 +61,7 @@
           d (m+ (m* a -2) (msquare c))
           x' d
           y' (-> (m- a d) (m* c) (m- b))
-          z' (-> (mdouble y') (m* z))]
+          z' (-> (mdouble y) (m* z))]
       (assoc this :x x' :y y' :z z')))
 
   ;; borrowing recursive algorithm from:
@@ -84,7 +84,5 @@
 
 (defn make-jacobian
   [x y z p]
-  (let [x (make-gfield x p)
-        y (make-gfield y p)
-        z (make-gfield z p)]
+  (let [[x y z] (map #(-> % unbox (make-gfield p)) [x y z])]
     (JacobianPoint. x y z)))

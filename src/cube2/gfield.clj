@@ -60,8 +60,8 @@
   ;; This is the legendre/legendre-sqrt function from sauer source
   (msqrt [this]
     (let [check (mpow this (-> P (- 1) (/ 2)))]
-      (cond (= 0 check) 0
-            (= 1 check) (mpow this (-> P inc (/ 4)))
+      (cond (= 0 (unbox check)) 0
+            (= 1 (unbox check)) (mpow this (-> P inc (/ 4)))
             :else nil)))
 
   ;; let java do the work for us

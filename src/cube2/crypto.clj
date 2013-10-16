@@ -1,7 +1,8 @@
 (ns cube2.crypto
   (:require [crypto.random]
             [cube2.jacobian :refer :all]
-            [cube2.gfield :refer :all]))
+            [cube2.gfield :refer :all]
+            [cube2.unbox :refer (unbox)]))
 
 ;; Base params for NIST 192-P (aka ANSI 192v1, etc etc etc) ;;
 
@@ -35,13 +36,24 @@
         bytes (/ bit-size 8)]
     (hex->dec (crypto.random/hex bytes))))
 
-(defn jacobian-from-x
-  "equivalent to the parse function in eihrul ecjacobian"
-  [x]
+(defn jacobian-coords-from-x
+  [x P]
   (let [x (make-gfield x P)
         y2 (m+ (m- (mpow x 3) (m* x 3)) (ecc-params :B))
         y (msqrt y2)]
-    (make-jacobian x y 1 P)))
+    [x y 1 P]))
+
+(defn parse-public-key
+  [key]
+  (let [sign (first key)
+        negative? (= \- sign)
+        key-x (->> key rest (apply str) hex->dec)
+        [x y z _] (jacobian-coords-from-x key-x P)
+        y (if (= negative?
+                 (not (zero? (mod (unbox y) 2))))
+            y
+            (* y -1))]
+    (make-jacobian x y z P)))
 
 (defn generate-private-key []
   (get-random))
