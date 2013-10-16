@@ -25,60 +25,77 @@
   (format "%x" (biginteger dec)))
 
 (defn hex->dec [hex]
-  (let [s (map #(Integer/parseInt (str %) 16) (flatten (map char hex)))]
-    (reduce
-     (fn [d x] (+ (* 16 d) x))
-     (bigint 0)
-     s)))
+  (if (number? hex)
+    hex
+    (let [s (map #(Integer/parseInt (str %) 16) (flatten (map char hex)))]
+      (reduce
+       (fn [d x] (+ (* 16 d) x))
+       (bigint 0)
+       s))))
 
 (defn get-random []
   (let [bit-size (ecc-params :bit-size)
         bytes (/ bit-size 8)]
     (hex->dec (crypto.random/hex bytes))))
 
-(defn jacobian-coords-from-x
+(defn jacobian-from-x
   [x P]
-  (let [x (make-gfield x P)
-        y2 (m+ (m- (mpow x 3) (m* x 3)) (ecc-params :B))
-        y (msqrt y2)]
-    [x y 1 P]))
+  (let [x (make-gfield (hex->dec x) P)
+        y (m+ (m- (mpow x 3) (m* x 3)) (ecc-params :B))
+        y (msqrt y)]
+    (make-jacobian x y 1 P)))
 
 (defn parse-public-key
   [key]
   (let [sign (first key)
         negative? (= \- sign)
         key-x (->> key rest (apply str) hex->dec)
-        [x y z _] (jacobian-coords-from-x key-x P)
-        y (if (= negative?
-                 (not (zero? (mod (unbox y) 2))))
-            y
-            (* y -1))]
-    (make-jacobian x y z P)))
+        {y :y :as jacobian} (jacobian-from-x key-x P)]
+    (if (= negative?
+           (not (zero? (mod (unbox y) 2))))
+      jacobian
+      (assoc jacobian :y (make-gfield (* y -1) P)))))
+
+(defn parse-private-key
+  [key]
+  (-> key hex->dec (make-gfield P)))
 
 (defn generate-private-key []
   (get-random))
 
 (defn get-public-key [private-key]
   (let [base (ecc-params :base)
-        key (if (string? private-key)
-              (hex->dec private-key)
-              private-key)]
-    (-> base
-        (jacobian-multiply key)
-        jacobian-normalize
-        :x)))
+        key (hex->dec private-key)
+        public-jacobian (-> base
+                            (jacobian-multiply key)
+                            jacobian-normalize)
+        sign (if (-> public-jacobian :y unbox (mod 2) zero?)
+               "+" "-")]
+    (->> public-jacobian :x unbox dec->hex (str sign))))
 
 (defn crypt-message
-  [message jacobian]
+  [jacobian message]
   (-> jacobian
       (jacobian-multiply message)
-      :x))
+      jacobian-normalize
+      :x
+      unbox))
 
 (defn generate-challenge
-  [message pubkey]
-  (let [jacobian-pubkey (jacobian-from-x pubkey)
+  [pubkey]
+  (let [jacobian-pubkey (parse-public-key pubkey)
         jacobian-base (ecc-params :base)
         message (get-random)]
     {:message message
-     :challenge (crypt-message message jacobian-base)
-     :answer (crypt-message message jacobian-pubkey)}))
+     :challenge (crypt-message jacobian-base message)
+     :answer (crypt-message jacobian-pubkey message)}))
+
+(defn generate-answer
+  [privkey challenge]
+  (let [key (hex->dec privkey)
+        c-jacobian (jacobian-from-x challenge P)]
+    (-> c-jacobian
+        (jacobian-multiply key)
+        jacobian-normalize
+        :x
+        unbox)))
