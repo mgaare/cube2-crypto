@@ -22,11 +22,13 @@
    :bit-size 192})
 
 (defn dec->hex [dec]
-  (let [pos? (pos? dec)
-        hexstr (format "%x" (biginteger dec))]
-    (if pos?
-      (str "+" hexstr)
-      hexstr)))
+  (if (string? dec)
+    dec
+    (let [pos? (pos? dec)
+          hexstr (format "%x" (biginteger dec))]
+      (if pos?
+        (str "+" hexstr)
+        hexstr))))
 
 (defn hex->dec [hex]
   (if (number? hex)
@@ -90,7 +92,8 @@
 
 (defn crypt-message
   [jacobian message]
-  (let [crypted-j
+  (let [message (hex->dec message)
+        crypted-j
         (-> jacobian
             (jacobian-multiply message)
             jacobian-normalize)
