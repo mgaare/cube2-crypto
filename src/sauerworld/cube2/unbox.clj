@@ -1,4 +1,4 @@
-(ns cube2.unbox)
+(ns sauerworld.cube2.unbox)
 
 (defprotocol Unboxable
   (unbox [x]))

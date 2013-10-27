@@ -1,5 +1,5 @@
-(ns cube2.gfield
-  (:require [cube2.unbox :refer :all]))
+(ns sauerworld.cube2.gfield
+  (:require [sauerworld.cube2.unbox :refer :all]))
 
 (defprotocol Modular
   "Defines protocol implementing modular arithmetic."

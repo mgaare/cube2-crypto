@@ -1,6 +1,6 @@
-(ns cube2.jacobian
-  (:require [cube2.gfield :refer :all]
-            [cube2.unbox :refer (unbox)]))
+(ns sauerworld.cube2.jacobian
+  (:require [sauerworld.cube2.gfield :refer :all]
+            [sauerworld.cube2.unbox :refer (unbox)]))
 
 (defprotocol Jacobian
   "Defines protocol implementing Jacobian curve operations."

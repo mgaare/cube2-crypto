@@ -4,6 +4,6 @@
             [clojure.set :as set]
             [clojure.pprint :refer (pprint)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
-            [cube2.crypto :as crypto]
-            [cube2.gfield :as gf]
-            [cube2.jacobian :as j]))
+            [sauerworld.cube2.crypto :as crypto]
+            [sauerworld.cube2.gfield :as gf]
+            [sauerworld.cube2.jacobian :as j]))

@@ -1,4 +1,4 @@
-(defproject cube2-crypto "0.1.0-SNAPSHOT"
+(defproject sauerworld/cube2.crypto "0.8-SNAPSHOT"
   :description "clojure implementation of Cube 2: Sauerbraten authentication crypto library"
   :url "https://github.com/mgaare/cube2-crypto"
   :license {:name "Eclipse Public License"
