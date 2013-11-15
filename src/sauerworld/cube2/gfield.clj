@@ -1,5 +1,5 @@
 (ns sauerworld.cube2.gfield
-  (:require [sauerworld.cube2.unbox :refer :all]))
+  (:require [sauerworld.cube2.conversion :refer :all]))
 
 (defprotocol Modular
   "Defines protocol implementing modular arithmetic."
@@ -16,24 +16,28 @@
 (defrecord GField
   [n P]
 
-  Unboxable
-  (unbox [this]
-    n)
+  BigIntAble
+  (to-bigint [this]
+    (bigint n))
+
+  Object
+  (toString [this]
+    (-> this to-bigint dec->hex))
 
   Modular
 
   (m+ [this y]
-    (let [y (unbox y)]
+    (let [y (to-bigint y)]
       (assoc this :n
              (mod (+ n y) P))))
 
   (m- [this y]
-    (let [y (unbox y)]
+    (let [y (to-bigint y)]
       (assoc this :n
              (mod (- n y) P))))
 
   (m* [this y]
-    (let [y (unbox y)]
+    (let [y (to-bigint y)]
       (assoc this :n
              (mod (* n y) P))))
 
@@ -60,8 +64,8 @@
   ;; This is the legendre/legendre-sqrt function from sauer source
   (msqrt [this]
     (let [check (mpow this (-> P (- 1) (/ 2)))]
-      (cond (= 0 (unbox check)) 0
-            (= 1 (unbox check)) (mpow this (-> P inc (/ 4)))
+      (cond (= 0 (to-bigint check)) 0
+            (= 1 (to-bigint check)) (mpow this (-> P inc (/ 4)))
             :else nil)))
 
   ;; let java do the work for us
@@ -74,4 +78,30 @@
 
 (defn make-gfield
   [n p]
-  (GField. n p))
+  (GField. (to-bigint n)
+           (to-bigint p)))
+
+(defprotocol GFieldConverter
+  (to-gfield [n P]))
+
+(extend-protocol GFieldConverter
+
+  String
+  (to-gfield [s P]
+    (make-gfield (hex->dec s) P))
+
+  Integer
+  (to-gfield [x P]
+    (make-gfield x P))
+
+  Long
+  (to-gfield [x P]
+    (make-gfield x P))
+
+  BigInteger
+  (to-gfield [x P]
+    (make-gfield x P))
+
+  clojure.lang.BigInt
+  (to-gfield [x P]
+    (make-gfield x P)))
