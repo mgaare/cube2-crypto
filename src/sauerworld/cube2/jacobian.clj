@@ -110,7 +110,7 @@
            gx (to-gfield x P)
            gy (m+ (m- (mpow gx 3) (m* gx 3)) B)
            gy (msqrt gy)
-           gy (if negative? (m* -1 gy) gy)]
+           gy (if negative? (m* gy -1) gy)]
        (make-jacobian gx gy 1 ecc-params)))
   ([x y z {:keys [P B] :as ecc-params}]
      (let [[x y z] (map #(-> % to-bigint (to-gfield P)) [x y z])]
