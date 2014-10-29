@@ -27,3 +27,10 @@
             (let [{c :challenge a :answer} (challenge (:public k))]
               (is (= a (answer (:private k) c)))))
           authkeys))))
+
+(deftest new-key
+  (testing "challenge and answer should match with new key"
+    (let [privkey (make-privkey)
+          pubkey (get-pubkey privkey)
+          c (challenge pubkey)]
+      (is (= (:answer c) (answer privkey (:challenge c)))))))

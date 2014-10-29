@@ -166,6 +166,11 @@
         (.multiply (to-biginteger privkey))
         (.normalize))))
 
+(defn make-privkey
+  "Generates a new private key string."
+  []
+  (random-message curve))
+
 (defn get-pubkey
   "Returns a pubkey from a given privkey as a properly cube2-formatted string."
   [privkey]
