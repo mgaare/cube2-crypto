@@ -7,4 +7,5 @@
              {:source-paths ["dev"]
               :dependencies [[org.clojars.jcrossley3/tools.namespace "0.2.4.1"]]}}
   :dependencies [[org.clojure/clojure "1.5.1"]
+                 [org.bouncycastle/bcprov-jdk15on "1.51"]
                  [crypto-random "1.1.0"]])
