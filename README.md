@@ -4,6 +4,12 @@ cube2.crypto is a small Clojure library for interoperating with [Cube 2: Sauerbr
 
 Morgan Borman has a build of the C++ Sauerbraten library with some useful utility functions here: [cube2crypto](https://github.com/MorganBorman/cube2crypto)
 
+## Installation
+
+Add the following dependency to your `project.clj` file:
+
+    [sauerworld/cube2.crypto "1.0.0"]
+
 ## Usage
 
 ```clojure
