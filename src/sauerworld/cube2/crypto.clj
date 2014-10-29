@@ -40,7 +40,6 @@
   (to-biginteger [x]
     x))
 
-
 (defn random-message
   "Generates a random message whose size matches the Curve's field size."
   [curve]
@@ -50,6 +49,7 @@
       (/ 8)
       (rand/hex)
       to-biginteger))
+
 
 ;;; Cryptsystem setup
 
@@ -62,13 +62,15 @@
 
 ;;; Key-related
 
-(defn new-private-keyspec
+;; these three functions aren't used, just here in case someone wants to do any
+;; "real" ecc
+(defn- new-private-keyspec
   "Convenience wrapper over ECPrivateKeySpec."
   [key-secret curve]
   (let [key-secret (to-biginteger key-secret)]
     (ECPrivateKeySpec. key-secret curve)))
 
-(defn keyspec->private-key
+(defn- keyspec->private-key
   "Convenience wrapper over .generatePrivate"
   [keyspec ^KeyFactory factory]
   (.generatePrivate factory keyspec))
